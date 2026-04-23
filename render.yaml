@@ -1,0 +1,27 @@
+services:
+  - type: web
+    name: hersentinel-backend
+    env: node
+    plan: free
+    buildCommand: cd HerSentinel-Backend && npm install
+    startCommand: cd HerSentinel-Backend && npm start
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 10000
+      - key: MONGODB_URI
+        fromDatabase:
+          name: hersentinel-db
+          property: connectionString
+      - key: STORAGE_PROVIDER
+        value: cloudinary
+      - key: ACCESS_TOKEN_SECRET
+        generateValue: true
+      - key: REFRESH_TOKEN_SECRET
+        generateValue: true
+databases:
+  - name: hersentinel-db
+    databaseName: hersentinel
+    user: hersentinel_user
+    plan: free
