@@ -1,0 +1,42 @@
+# OS / editor
+.DS_Store
+Thumbs.db
+.vscode/*.log
+
+# Dependency directories
+**/node_modules/
+
+# Build artifacts
+**/android/.gradle/
+**/android/app/build/
+**/android/build/
+**/ios/build/
+**/build/
+**/dist/
+**/coverage/
+
+# Runtime/user-generated artifacts
+HerSentinel-Backend/uploads/
+
+# Android signing artifacts
+**/*.keystore
+HerSentinel/android/app/debug.keystore
+
+# Env files
+**/.env
+**/.env.*
+!**/.env.example
+
+# Logs
+**/*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Temporary / cache
+**/.cache/
+**/.expo/
+
+# Backup of previous nested repos (created during monorepo conversion)
+HerSentinel/.git_backup_monorepo_*
+HerSentinel-Backend/.git_backup_monorepo_*

@@ -1,0 +1,419 @@
+================================================================================
+HERSENTIAL - COMPLETE DEPLOYMENT GUIDE FOR APK & BACKEND
+================================================================================
+Date: April 17, 2026
+Target: Android APK + Backend Server Deployment
+Difficulty: Beginner (Step-by-step guide)
+
+================================================================================
+PART 1: PREPARE YOUR DEVELOPMENT ENVIRONMENT
+================================================================================
+
+STEP 1.1: Install Required Tools
+---------------------------------
+
+Before starting, ensure you have:
+
+1. Android Studio (for APK building)
+   - Download: https://developer.android.com/studio
+   - Install: Follow default installation
+   - Setup SDK: Android Studio > Settings > SDK Manager
+     * Install Android SDK 33 or higher
+     * Install Android Build Tools (latest)
+     * Install Android Emulator (optional but recommended)
+
+2. Java Development Kit (JDK) 11 or higher
+   - Check if installed: Open Terminal/CMD, type: java -version
+   - If not installed, download JDK from Oracle or use Adoptium
+
+3. Node.js & npm (already installed for your project)
+   - Check: node -v (should be v18+)
+   - Check: npm -v (should be v9+)
+
+4. Environment Variables Setup (CRITICAL)
+   - Add Android SDK to system PATH
+   - Location: C:\Users\<YourUsername>\AppData\Local\Android\Sdk
+   - On Windows: Go to System Properties > Environment Variables > Path > Add above path
+
+STEP 1.2: Install Android Build Tools
+-------------------------------------
+
+Open Terminal in C:\P-HerSentinel\HerSentinel and run:
+
+  npm install
+
+Then navigate to android folder:
+
+  cd android
+  ./gradlew.bat downloadDependencies
+
+This downloads all required Android dependencies (~15-30 minutes)
+
+
+================================================================================
+PART 2: CONFIGURE API BASE URL (NO MANUAL CHANGES NEEDED)
+================================================================================
+
+YOUR CURRENT SETUP:
+The app reads API URL from different places:
+
+1. Development Mode: http://localhost:4000 (default)
+2. Production Mode: Will be set in .env file
+
+STEP 2.1: Create Environment Configuration File
+-----------------------------------------------
+
+Create file: C:\P-HerSentinel\HerSentinel\.env
+
+Add these lines (REPLACE with your actual IP/server):
+
+  # Development (for local testing on emulator)
+  REACT_APP_API_BASE_URL=http://10.0.2.2:4000
+  
+  # Production (for deployed backend)
+  # REACT_APP_API_BASE_URL=http://your-server-ip:4000
+
+STEP 2.2: Update api.js File
+----------------------------
+
+Edit: C:\P-HerSentinel\HerSentinel\src\config\api.js
+
+Make sure it reads from environment:
+
+  const API_BASE_URL = process.env.REACT_APP_API_BASE_URL || 'http://10.0.2.2:4000';
+  
+  const api = axios.create({
+    baseURL: API_BASE_URL,
+    timeout: 15000,
+  });
+
+STEP 2.3: Build Configuration
+----------------------------
+
+Edit: C:\P-HerSentinel\HerSentinel\android\app\build.gradle
+
+Find section: android { ... buildTypes { ... } }
+
+Update release build to use environment URL:
+
+  release {
+    buildConfigField "String", "API_BASE_URL", "\"${System.getenv('API_URL') ?: 'http://your-backend-ip:4000'}\""
+  }
+
+
+================================================================================
+PART 3: BACKEND DEPLOYMENT (DO THIS FIRST)
+================================================================================
+
+Your backend server needs to be running BEFORE the app can connect.
+
+STEP 3.1: Check Backend Code
+----------------------------
+
+Location: C:\P-HerSentinel\HerSentinel-Backend\
+
+Ensure it has:
+- package.json
+- server.js or index.js (main entry point)
+- .env file with MongoDB connection string
+
+STEP 3.2: Start Backend Locally (Testing)
+-----------------------------------------
+
+In Terminal, navigate to backend:
+
+  cd C:\P-HerSentinel\HerSentinel-Backend
+  npm install
+  npm start
+
+Expected output:
+  Server running on port 4000
+  MongoDB connected successfully
+
+Keep this terminal OPEN - your backend is now running.
+
+NOTE: Get your computer's IP address:
+  - Windows: Open CMD, type: ipconfig
+  - Look for "IPv4 Address" (usually 192.168.x.x or 10.0.x.x)
+  - This is the IP you'll use in your APK configuration
+
+STEP 3.3: Deploy Backend to Cloud (Later - Optional)
+----------------------------------------------------
+
+Options for cloud deployment:
+
+Option A: Use Heroku (Free tier deprecated, paid starts $7/month)
+Option B: Use Railway.app (Free credits, easy deployment)
+Option C: Use Render (Free tier available)
+Option D: Use AWS EC2 (Free tier for 1 year)
+Option E: Use Azure App Service (Free tier available)
+
+For now, we'll use LOCAL backend for testing.
+
+
+================================================================================
+PART 4: BUILD APK (WITHOUT MANUAL CONFIG)
+================================================================================
+
+STEP 4.1: Update Your API URL
+----------------------------
+
+Before building, update the .env file with your backend IP:
+
+Edit: C:\P-HerSentinel\HerSentinel\.env
+
+  REACT_APP_API_BASE_URL=http://192.168.1.100:4000
+
+Replace 192.168.1.100 with YOUR computer's IPv4 address.
+
+For Android Emulator: Use http://10.0.2.2:4000 (special emulator address)
+
+STEP 4.2: Debug Build (For Testing on Emulator/Device)
+-----------------------------------------------------
+
+In Terminal, navigate to project:
+
+  cd C:\P-HerSentinel\HerSentinel
+
+Run build command:
+
+  npm run android
+
+This will:
+1. Compile JavaScript to native code
+2. Build APK in debug mode
+3. Install on connected Android device/emulator
+4. Launch app automatically
+
+STEP 4.3: Release Build (For Distribution)
+------------------------------------------
+
+For production APK (smaller, optimized):
+
+  cd android
+  ./gradlew.bat assembleRelease
+
+This creates:
+  android/app/build/outputs/apk/release/app-release.apk
+
+APK size: ~50-80 MB
+
+STEP 4.4: Signed APK (For Play Store)
+------------------------------------
+
+You need a signing key:
+
+1. Generate signing key (first time only):
+     cd android
+     keytool -genkey -v -keystore my-release-key.keystore \
+             -keyalg RSA -keysize 2048 -validity 10000 \
+             -alias my-key-alias
+
+   Answer questions about your certificate details
+
+2. Create: android/gradle.properties
+
+   Add lines:
+     MYAPP_RELEASE_STORE_FILE=my-release-key.keystore
+     MYAPP_RELEASE_STORE_PASSWORD=your_password
+     MYAPP_RELEASE_KEY_ALIAS=my-key-alias
+     MYAPP_RELEASE_KEY_PASSWORD=your_password
+
+3. Build signed APK:
+     ./gradlew.bat assembleRelease
+
+   Result: android/app/build/outputs/apk/release/app-release.apk
+
+This APK can be uploaded to Google Play Store.
+
+
+================================================================================
+PART 5: WIRELESS INSTALLATION (APK WITHOUT USB CABLE)
+================================================================================
+
+STEP 5.1: Enable Wireless ADB Debugging
+--------------------------------------
+
+On Android Device:
+1. Developer Options > USB Debugging > Enable
+2. Developer Options > Wireless Debugging > Enable
+3. Get your device IP address (shown in Wireless Debugging settings)
+
+On Computer (Command Line):
+  adb connect your-device-ip:5555
+
+Example:
+  adb connect 192.168.1.50:5555
+
+Verify connection:
+  adb devices
+
+STEP 5.2: Install APK Wirelessly
+--------------------------------
+
+After building APK:
+
+  adb -s 192.168.1.50:5555 install C:\P-HerSentinel\HerSentinel\android\app\build\outputs\apk\debug\app-debug.apk
+
+For release APK:
+  adb -s 192.168.1.50:5555 install C:\P-HerSentinel\HerSentinel\android\app\build\outputs\apk\release\app-release.apk
+
+APK installs on your device without USB cable!
+
+
+================================================================================
+PART 6: TESTING YOUR DEPLOYMENT
+================================================================================
+
+STEP 6.1: Start Backend (Keep Running)
+--------------------------------------
+
+  cd C:\P-HerSentinel\HerSentinel-Backend
+  npm start
+
+STEP 6.2: Build & Run APK on Emulator
+------------------------------------
+
+Terminal 1 (Backend):
+  npm start
+  [Output: Server running on port 4000]
+
+Terminal 2 (Frontend):
+  cd C:\P-HerSentinel\HerSentinel
+  npm run android
+  [App should launch on emulator after 2-3 minutes]
+
+STEP 6.3: Verify API Connection
+------------------------------
+
+On app, try these actions:
+1. Login screen > Check if it connects to backend
+2. Enter credentials
+3. Check for error messages
+
+If you see connection errors:
+- Verify backend is running (port 4000)
+- Verify API URL in .env is correct
+- Check your firewall allows port 4000
+
+STEP 6.4: Test Core Features
+----------------------------
+
+1. Trigger SOS
+   - Should record location
+   - Should show on guardian dashboard
+   
+2. Capture Evidence
+   - Should upload to backend
+   - Should store in /uploads/evidence/
+   
+3. View Events
+   - Should fetch from backend
+   - Should display timestamps
+
+
+================================================================================
+PART 7: AUTOMATED DEPLOYMENT SCRIPT (NO MANUAL STEPS)
+================================================================================
+
+Create file: C:\P-HerSentinel\deploy.bat
+
+Content:
+
+  @echo off
+  echo Starting HerSentinel Deployment...
+  echo.
+  
+  REM Backend startup
+  start cmd /k "cd C:\P-HerSentinel\HerSentinel-Backend && npm start"
+  timeout /t 5
+  
+  REM Frontend build
+  cd C:\P-HerSentinel\HerSentinel
+  echo Building APK...
+  call npm run android
+  
+  echo.
+  echo Deployment Complete!
+  pause
+
+Usage: Double-click deploy.bat to start everything automatically.
+
+
+================================================================================
+PART 8: TROUBLESHOOTING
+================================================================================
+
+ERROR: "Unable to connect to backend"
+SOLUTION:
+  1. Verify backend is running: Check Terminal 1 for port 4000
+  2. Verify API URL in .env matches your IP
+  3. Check firewall: Windows Defender > Allow app through firewall > Add Node.js
+  4. Test connection: Open browser, go to http://your-ip:4000/api/health
+
+ERROR: "Android SDK not found"
+SOLUTION:
+  1. Open Android Studio
+  2. Go to Settings > SDK Manager
+  3. Check that Android SDK is installed
+  4. Update environment variables (Path) to include Android SDK
+
+ERROR: "Gradle build failed"
+SOLUTION:
+  1. Clear Gradle cache:
+     cd android
+     ./gradlew.bat clean
+  2. Try building again:
+     ./gradlew.bat assembleDebug
+
+ERROR: "Cannot find connected device"
+SOLUTION:
+  1. Check USB cable is connected properly
+  2. Enable USB Debugging on device
+  3. Run: adb devices (should list your device)
+  4. For emulator: Start Android Studio > AVD Manager > Launch emulator
+
+
+================================================================================
+PART 9: QUICK START REFERENCE (USE THIS EVERY TIME)
+================================================================================
+
+Deployment Checklist:
+
+Terminal 1 - START BACKEND:
+  cd C:\P-HerSentinel\HerSentinel-Backend
+  npm install
+  npm start
+  [Wait until: "Server running on port 4000"]
+
+Terminal 2 - UPDATE API URL:
+  Edit .env file with your device IP:
+  REACT_APP_API_BASE_URL=http://192.168.1.100:4000
+
+Terminal 3 - BUILD & RUN:
+  cd C:\P-HerSentinel\HerSentinel
+  npm run android
+  [Wait for app to launch on device/emulator]
+
+VERIFY:
+  - Check backend terminal: See incoming API requests
+  - Check app: Can login and trigger SOS
+  - Check uploads folder: Evidence files are saved
+
+DONE! Your app is deployed and running locally.
+
+
+================================================================================
+NEXT STEPS: CLOUD DEPLOYMENT (AFTER LOCAL TESTING)
+================================================================================
+
+Once local deployment is working:
+
+1. Deploy backend to Railway.app or Render.com (5-10 minutes)
+2. Update .env with cloud backend URL
+3. Build release APK
+4. Upload to Google Play Store (requires Google Developer account)
+
+Would you like detailed instructions for cloud deployment? Let me know!
+
+================================================================================

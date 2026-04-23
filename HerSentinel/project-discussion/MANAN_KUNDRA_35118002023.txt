@@ -1,0 +1,24 @@
+MANAN KUNDRA (35118002023)
+Role: Frontend Developer and UI/UX Lead
+
+Simple Role Description:
+Manan worked on the app's front screen design, page layout, and overall user experience. He made sure the app looks clean, easy to use, and professional on mobile devices.
+
+What was done in the project:
+- Designed the main screens and interface structure.
+- Improved buttons, cards, spacing, and overall visual style.
+- Worked on dark mode and light mode appearance.
+- Made the app easier to navigate for users and guardians.
+- Helped make the app look modern and presentation-friendly.
+
+How to explain in the discussion:
+"I worked on the frontend and UI/UX part of HerSentinel. My focus was to make the app simple, attractive, and easy to use for both emergency users and guardians. I also handled the visual layout and theme design."
+
+FAQ Questions:
+1. What was your main role in the project?
+2. Which screens or UI parts did you work on?
+3. How did you improve the user experience?
+4. What changes did you make for dark mode and light mode?
+5. Why is UI/UX important in a safety app like HerSentinel?
+6. What was your biggest contribution to the project?
+7. How did your work help the app become easier to use?

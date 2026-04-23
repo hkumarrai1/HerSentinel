@@ -1,0 +1,24 @@
+HARSH KUMAR RAI (01018002023)
+Role: Backend and Security Developer
+
+Simple Role Description:
+Harsh worked on the backend system and security part of the project. He helped manage data, emergency requests, authentication, and safe communication between the app and server.
+
+What was done in the project:
+- Developed backend APIs for app features.
+- Managed emergency data and evidence storage.
+- Worked on secure login and token-based authentication.
+- Helped protect user information and system access.
+- Supported safe communication between mobile app and server.
+
+How to explain in the discussion:
+"I worked on the backend and security part of HerSentinel. My focus was to build the server side of the app, manage emergency data, and make sure the system is secure and reliable."
+
+FAQ Questions:
+1. What was your role in the project?
+2. What backend work did you do?
+3. How is the app kept secure?
+4. What data does the backend store?
+5. How does authentication work in the project?
+6. Why is security important in HerSentinel?
+7. How did you support the app's emergency workflow?

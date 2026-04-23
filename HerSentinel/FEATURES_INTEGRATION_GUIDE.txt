@@ -1,0 +1,434 @@
+================================================================================
+HERSENTIAL - NEW FEATURES INTEGRATION GUIDE
+================================================================================
+
+This guide shows how to integrate:
+1. Voice Recognition & Shake Detection (Emergency Trigger Service)
+2. Live Video Feed (Between User and Guardian)
+3. Enhanced Location Display
+4. Background Emergency Mode
+
+
+================================================================================
+PART 1: UPDATE EMERGENCY CONTEXT TO STORE EMERGENCY MODE STATE
+================================================================================
+
+File: src/context/EmergencyContext.js
+
+Update or create:
+
+  import React, { createContext, useState, useCallback } from 'react';
+
+  export const EmergencyContext = createContext();
+
+  export const EmergencyProvider = ({ children }) => {
+    const [isEmergencyModeOn, setIsEmergencyModeOn] = useState(false);
+    const [activeEventId, setActiveEventId] = useState(null);
+
+    const toggleEmergencyMode = useCallback((enabled) => {
+      console.log(`Emergency Mode: ${enabled ? 'ON' : 'OFF'}`);
+      setIsEmergencyModeOn(enabled);
+    }, []);
+
+    const setActiveEvent = useCallback((eventId) => {
+      setActiveEventId(eventId);
+    }, []);
+
+    return (
+      <EmergencyContext.Provider
+        value={{
+          isEmergencyModeOn,
+          activeEventId,
+          toggleEmergencyMode,
+          setActiveEvent,
+        }}
+      >
+        {children}
+      </EmergencyContext.Provider>
+    );
+  };
+
+  export default EmergencyContext;
+
+
+================================================================================
+PART 2: UPDATE HOME SCREEN TO SHOW EMERGENCY MODE TOGGLE
+================================================================================
+
+File: src/screens/HomeScreen.js
+
+Add to top of component:
+
+  import { useContext } from 'react';
+  import EmergencyContext from '../context/EmergencyContext';
+  import { useEmergencyTrigger } from '../hooks/useEmergencyTrigger';
+
+In your component JSX:
+
+  const emergencyContext = useContext(EmergencyContext);
+  const { isEmergencyModeOn, toggleEmergencyMode } = emergencyContext;
+
+  // Setup emergency triggers (shake & voice detection)
+  useEmergencyTrigger(
+    (triggerType) => {
+      console.log('Emergency triggered by:', triggerType); // 'SHAKE_DETECTION' or 'VOICE_DETECTION'
+      // Auto-trigger SOS here
+      triggerSOS();
+    },
+    isEmergencyModeOn
+  );
+
+Add UI button:
+
+  <TouchableOpacity 
+    style={{
+      padding: 15,
+      backgroundColor: isEmergencyModeOn ? '#ff4444' : '#444',
+      borderRadius: 10,
+    }}
+    onPress={() => toggleEmergencyMode(!isEmergencyModeOn)}
+  >
+    <Text style={{ color: 'white', fontWeight: 'bold' }}>
+      {isEmergencyModeOn ? '🔴 Emergency Mode ON' : '⚪ Emergency Mode OFF'}
+    </Text>
+    <Text style={{ color: '#ccc', fontSize: 12, marginTop: 5 }}>
+      Shake phone or say "help" to trigger SOS
+    </Text>
+  </TouchableOpacity>
+
+
+================================================================================
+PART 3: UPDATE EMERGENCY ACTIVE SCREEN FOR LIVE VIDEO
+================================================================================
+
+File: src/screens/EmergencyActiveScreen.js
+
+Add imports at top:
+
+  import LiveVideoService from '../services/LiveVideoService';
+  import { RTCView } from 'react-native-webrtc';
+  import { useContext, useEffect, useRef } from 'react';
+
+In component setup:
+
+  const liveVideoServiceRef = useRef(null);
+  const [localStream, setLocalStream] = useState(null);
+  const [remoteStream, setRemoteStream] = useState(null);
+  const [videoConnected, setVideoConnected] = useState(false);
+  const [isAudioMuted, setIsAudioMuted] = useState(false);
+  const [isVideoOff, setIsVideoOff] = useState(false);
+
+Initialize video service:
+
+  useEffect(() => {
+    // Create video service instance
+    const liveVideoService = new LiveVideoService(API_BASE_URL);
+    
+    liveVideoServiceRef.current = liveVideoService;
+
+    // Set callbacks
+    liveVideoService.onRemoteStreamReady = (stream) => {
+      console.log('Remote stream ready');
+      setRemoteStream(stream);
+      setVideoConnected(true);
+    };
+
+    liveVideoService.onConnectionStateChange = (state) => {
+      if (state === 'connected') {
+        setVideoConnected(true);
+      } else if (state === 'failed' || state === 'ended') {
+        setVideoConnected(false);
+      }
+    };
+
+    liveVideoService.onError = (error) => {
+      console.error('Video service error:', error);
+      Alert.alert('Video Error', error);
+    };
+
+    return () => {
+      if (liveVideoServiceRef.current) {
+        liveVideoServiceRef.current.endVideoCall();
+      }
+    };
+  }, []);
+
+Start video call when SOS is triggered:
+
+  const startVideoCall = async () => {
+    try {
+      if (!guardianId) {
+        Alert.alert('Error', 'No guardian assigned');
+        return;
+      }
+
+      const result = await liveVideoServiceRef.current.startVideoCall(
+        activeEventId,
+        guardianId,
+        {
+          id: userId,
+          name: userName,
+        }
+      );
+
+      if (result.success) {
+        setLocalStream(result.localStream);
+        console.log('Video call started');
+      } else {
+        Alert.alert('Error', result.error || 'Failed to start video call');
+      }
+    } catch (error) {
+      console.error('Error starting video call:', error);
+      Alert.alert('Error', error.message);
+    }
+  };
+
+Add video UI to JSX:
+
+  {videoConnected && remoteStream && (
+    <View style={{ width: '100%', height: 300, backgroundColor: '#000' }}>
+      <RTCView streamURL={remoteStream.toURL()} style={{ flex: 1 }} />
+    </View>
+  )}
+
+  {localStream && (
+    <View style={{ width: 120, height: 200, position: 'absolute', right: 10, bottom: 50 }}>
+      <RTCView streamURL={localStream.toURL()} style={{ flex: 1 }} />
+    </View>
+  )}
+
+Add control buttons:
+
+  <TouchableOpacity 
+    onPress={() => {
+      const newState = !isAudioMuted;
+      setIsAudioMuted(newState);
+      liveVideoServiceRef.current.toggleAudio(!newState);
+    }}
+    style={{ padding: 10, backgroundColor: isAudioMuted ? '#ff4444' : '#44ff44' }}
+  >
+    <Text>{isAudioMuted ? '🔇 Unmute' : '🔊 Mute'}</Text>
+  </TouchableOpacity>
+
+  <TouchableOpacity 
+    onPress={() => {
+      const newState = !isVideoOff;
+      setIsVideoOff(newState);
+      liveVideoServiceRef.current.toggleVideo(!newState);
+    }}
+    style={{ padding: 10, backgroundColor: isVideoOff ? '#ff4444' : '#4444ff' }}
+  >
+    <Text>{isVideoOff ? '📹 Start Video' : '📵 Stop Video'}</Text>
+  </TouchableOpacity>
+
+  <TouchableOpacity 
+    onPress={() => {
+      liveVideoServiceRef.current.switchCamera();
+    }}
+    style={{ padding: 10, backgroundColor: '#444' }}
+  >
+    <Text>📷 Switch Camera</Text>
+  </TouchableOpacity>
+
+
+================================================================================
+PART 4: GUARDIAN DASHBOARD - RECEIVE VIDEO CALL
+================================================================================
+
+File: src/screens/GuardianDashboard.js (or similar)
+
+Add when an SOS event is received:
+
+  import LiveVideoService from '../services/LiveVideoService';
+
+  const handleIncomingSOS = async (event) => {
+    try {
+      // Create video service
+      const videoService = new LiveVideoService(API_BASE_URL);
+      
+      // Set up callbacks
+      videoService.onRemoteStreamReady = (stream) => {
+        setRemoteStream(stream); // User's video
+        setVideoConnected(true);
+      };
+
+      // Start receiving video
+      const result = await videoService.receiveVideoCall(
+        event.eventId,
+        event.offer,
+        { eventId: event.eventId, userId: event.userId }
+      );
+
+      if (result.success) {
+        setLocalStream(result.localStream); // Guardian's video
+        console.log('Receiving user video stream');
+      }
+    } catch (error) {
+      console.error('Error receiving SOS video:', error);
+      Alert.alert('Error', 'Failed to receive video');
+    }
+  };
+
+
+================================================================================
+PART 5: UPDATE API.JS FOR VIDEO SIGNALING
+================================================================================
+
+File: src/config/api.js
+
+Ensure socket.io is configured in your backend:
+
+Backend route example (Node.js/Express):
+
+  io.on('connection', (socket) => {
+    console.log('New socket connection:', socket.id);
+
+    // Handle video call initiation
+    socket.on('video:initiate-call', (data) => {
+      const { eventId, offer, userDetails } = data;
+      
+      // Send offer to guardian
+      io.to(`guardian:${userDetails.guardianId}`).emit('video:offer', {
+        eventId,
+        offer,
+        userId: userDetails.id,
+        userName: userDetails.name,
+      });
+    });
+
+    // Handle video answer
+    socket.on('video:answer', (data) => {
+      const { eventId, answer } = data;
+      
+      io.to(`event:${eventId}`).emit('video:answer', {
+        answer,
+      });
+    });
+
+    // Handle ICE candidates
+    socket.on('video:ice-candidate', (data) => {
+      const { eventId, candidate } = data;
+      
+      io.to(`event:${eventId}`).emit('video:ice-candidate', {
+        candidate,
+      });
+    });
+
+    // Handle stream ended
+    socket.on('video:end-call', (data) => {
+      const { eventId } = data;
+      
+      io.to(`event:${eventId}`).emit('video:stream-ended', {
+        eventId,
+      });
+    });
+  });
+
+
+================================================================================
+PART 6: LOCATION DISPLAY UPDATE (ALREADY DONE)
+================================================================================
+
+Your EmergencyActiveScreen.js has been updated to show:
+- Readable address if available
+- Coordinates with accuracy if address not available
+- Location icon indicator
+
+
+================================================================================
+WORKFLOW EXAMPLE: SOS WITH LIVE VIDEO
+================================================================================
+
+1. User Enables Emergency Mode
+   Button toggles: isEmergencyModeOn = true
+   ↓ Shake detection & voice recognition start listening
+
+2. User Shakes Phone 4-5 Times (or says "help" 4-5 times)
+   ↓ useEmergencyTrigger hook detects event
+
+3. Auto-Trigger SOS
+   ↓ Creates EmergencyEvent in database
+   ↓ Sends notification to guardian
+
+4. Start Video Call
+   ↓ LiveVideoService initiates WebRTC connection
+   ↓ Sends offer to guardian via Socket.io
+
+5. Guardian Receives SOS + Video Offer
+   ↓ Guardian accepts video call
+   ↓ receiveVideoCall() starts on guardian's device
+
+6. Video Stream Active
+   ↓ User's camera visible on guardian dashboard
+   ↓ Guardian can see live location + video
+   ↓ Both can control audio/video/camera
+
+7. Call Ends
+   ↓ Either party clicks "End Call"
+   ↓ Streams stop, connection closes
+   ↓ Emergency event may stay active for follow-up
+
+
+================================================================================
+PRIORITY OF FEATURES TO INTEGRATE
+================================================================================
+
+1. Location Display (✅ DONE - EmergencyActiveScreen.js updated)
+
+2. Emergency Mode Toggle (HOME SCREEN)
+   - Shows ON/OFF button
+   - Enables background monitoring
+
+3. Voice Recognition & Shake Detection (HOME SCREEN)
+   - Integrates useEmergencyTrigger hook
+   - Auto-triggers SOS
+
+4. Live Video Feed (EMERGENCY ACTIVE SCREEN)
+   - Shows user camera on guardian dashboard
+   - Shows guardian camera (optional) on user screen
+
+5. Backend Socket.io Integration
+   - Set up video signaling routes
+   - Handle offer/answer/ICE candidates
+
+6. Guardian Dashboard Update
+   - Add video view component
+   - Show incoming SOS with video option
+
+
+================================================================================
+TESTING CHECKLIST
+================================================================================
+
+Before deployment:
+
+☐ Install all dependencies
+☐ Build APK successfully
+☐ Emergency Mode toggle works
+☐ Shake detection triggers SOS (test with emulator or device)
+☐ Voice detection recognizes "help" (test on physical device)
+☐ SOS creates event in database
+☐ Location displays correctly (address or coordinates)
+☐ Video call initiates without errors
+☐ Both local and remote streams appear
+☐ Audio/video controls work
+☐ Guardian receives video and can see it
+☐ Ending call stops streams properly
+
+
+================================================================================
+DEPLOYMENT ORDER
+================================================================================
+
+1. Install dependencies (DEPENDENCIES_SETUP.txt)
+2. Update code (this guide)
+3. Build and test locally (DEPLOYMENT_GUIDE.txt)
+4. Test on physical device with another device as guardian
+5. Deploy backend to cloud server
+6. Update API URL in .env to cloud backend
+7. Build release APK
+8. Distribute to testers
+9. Submit to Google Play Store (if ready)
+
+
+================================================================================

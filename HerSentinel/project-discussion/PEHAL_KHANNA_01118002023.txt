@@ -1,0 +1,24 @@
+PEHAL KHANNA (01118002023)
+Role: Sensor Integration and Feature Developer
+
+Simple Role Description:
+Pehal worked on connecting mobile sensors and app features. Her work helped the app capture useful information like location, camera, audio, and evidence-related actions.
+
+What was done in the project:
+- Connected device sensors and permission-based features.
+- Worked on location sharing and emergency tracking support.
+- Helped with camera and audio evidence capture.
+- Supported features that make the app respond in real time.
+- Made sure the app can gather useful emergency data from the phone.
+
+How to explain in the discussion:
+"I worked on sensor integration and feature development in HerSentinel. My job was to connect phone-based features like location, camera, and audio so the app can collect useful emergency information and share it properly."
+
+FAQ Questions:
+1. What sensors or device features did you work with?
+2. Why is sensor integration important in HerSentinel?
+3. How does the app use location or camera access?
+4. What type of evidence can the app capture?
+5. How did you make the features work in real time?
+6. What permissions are needed for these features?
+7. What was your contribution to the emergency response flow?

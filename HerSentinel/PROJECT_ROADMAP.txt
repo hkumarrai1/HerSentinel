@@ -1,0 +1,98 @@
+HERSENTINEL - FEATURE ROADMAP & PRIORITY LIST
+===============================================
+
+PRIORITY 1 - CRITICAL (Implement Now)
+=====================================
+
+1. Location Display Correction
+   - Convert Lon/Lat to readable address format
+   - Show exact location name instead of raw coordinates
+   - Status: IN PROGRESS
+
+2. Live Video Feed During SOS
+   - Real-time video call between user and guardian
+   - User camera stream to guardian's dashboard
+   - Guardian can view live video during active SOS
+   - Status: PLANNED
+
+3. Voice Recognition & Automatic SOS Trigger
+   - Shake detection (4-5 phone shakes = auto SOS)
+   - Voice command detection ("help" spoken 4-5 times = auto SOS)
+   - Background service while emergency mode is ON
+   - Status: PLANNED
+
+4. Backend & Frontend Deployment as APK
+   - Build APK without manual API configuration
+   - Wireless deployment capability
+   - Environment-based API URLs
+   - Deployment guide for first-time users
+   - Status: HIGHEST PRIORITY
+
+5. Emergency Mode Background Service
+   - Runs continuously when enabled
+   - Listens for shake/voice triggers
+   - Does not drain battery excessively
+   - Status: PLANNED
+
+
+PRIORITY 2 - IMPORTANT (Next Sprint)
+====================================
+
+6. Push Notifications for SOS/Evidence Alerts
+   - Real-time notifications to guardians
+   - Silent notifications for privacy
+   - Status: PLANNED
+
+7. Geofencing for Dangerous Zones
+   - Auto-trigger SOS if user enters unsafe area
+   - Customizable danger zones
+   - Status: PLANNED
+
+8. Emergency Contact Escalation
+   - Auto-call emergency services if SOS active
+   - SMS alerts to backup contacts
+   - Status: PLANNED
+
+9. Proof of Life Check-ins
+   - Guardian can request periodic check-in
+   - User confirms they're safe
+   - Status: PLANNED
+
+10. Advanced Analytics Dashboard for Guardians
+    - Historical SOS trends
+    - Evidence statistics
+    - Guardian activity logs
+    - Status: PLANNED
+
+
+PRIORITY 3 - ENHANCEMENT (Future Phases)
+========================================
+
+11. Multi-Language Support
+    - English, Hindi, and regional languages
+    - User language preference setting
+    - Status: PLANNED
+
+12. Community Emergency Reporting
+    - Share incident reports with community
+    - Crowdsourced safety map
+    - Status: PLANNED
+
+13. Integration with Local Emergency Services
+    - API integration with police/ambulance
+    - Auto-report to local authorities
+    - Status: PLANNED
+
+14. Advanced Video Analytics
+    - Automatic face detection in evidence
+    - License plate recognition
+    - Status: PLANNED
+
+
+CURRENT SPRINT FOCUS:
+====================
+1. Location address conversion (Easy - 1-2 hours)
+2. APK deployment setup (Medium - 2-3 hours)
+3. Deployment guide & training (Teaching - 1 hour)
+4. Live video feed architecture (Complex - requires WebRTC)
+5. Voice recognition setup (Medium - 2 hours)

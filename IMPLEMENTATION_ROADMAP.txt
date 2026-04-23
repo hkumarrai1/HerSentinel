@@ -1,0 +1,492 @@
+================================================================================
+HERSENTIAL - IMPLEMENTATION PRIORITY ROADMAP
+================================================================================
+
+Complete step-by-step implementation order with time estimates and dependencies
+
+
+================================================================================
+PHASE 1: DEPLOYMENT FOUNDATION (PRIORITY 1 - DO NOW)
+================================================================================
+
+Critical for getting the app working on devices
+
+Task 1.1: Setup Deployment Environment
+  Status: NOT STARTED
+  Time: 1-2 hours
+  Requirements: Android Studio, Java JDK
+  Docs: DEPLOYMENT_GUIDE.txt (PART 1)
+  Outcome: Ready to build APK
+  
+Task 1.2: Install Dependencies for New Features
+  Status: NOT STARTED
+  Time: 15-30 minutes
+  Requirements: npm (already have)
+  Docs: DEPENDENCIES_SETUP.txt
+  Command:
+    npm install @react-native-voice/voice react-native-sensors react-native-webrtc socket.io-client
+  Outcome: All packages ready to use
+  
+Task 1.3: Setup Backend + Database
+  Status: LIKELY DONE (verify)
+  Time: 0-30 minutes (if needed)
+  Requirements: MongoDB Atlas connection string
+  Docs: DEPLOYMENT_GUIDE.txt (PART 3)
+  Command:
+    cd C:\P-HerSentinel\HerSentinel-Backend
+    npm install
+    npm start
+  Outcome: Backend running on port 4000
+  
+Task 1.4: Configure API Base URL (NO MANUAL CONFIG LATER)
+  Status: NOT STARTED
+  Time: 10 minutes
+  Requirements: Your computer's IPv4 address
+  Docs: DEPLOYMENT_GUIDE.txt (PART 2)
+  Files to Update:
+    - C:\P-HerSentinel\HerSentinel\.env
+    - src/config/api.js
+  Outcome: App connects to backend automatically
+  
+Task 1.5: First APK Build
+  Status: NOT STARTED
+  Time: 5-10 minutes (first time 15-20 min with Gradle setup)
+  Requirements: Android SDK, Gradle
+  Docs: DEPLOYMENT_GUIDE.txt (PART 4)
+  Command:
+    cd C:\P-HerSentinel\HerSentinel
+    npm run android
+  Outcome: App running on emulator or device
+
+
+SUBTOTAL PHASE 1: 2-3.5 HOURS (First time setup)
+
+
+================================================================================
+PHASE 2: LOCATION DISPLAY ENHANCEMENT (PRIORITY 1 - EASY WIN)
+================================================================================
+
+Makes location display readable instead of raw coordinates
+
+Task 2.1: Add Geocoding Service
+  Status: ✅ DONE
+  Time: Already completed
+  Files:
+    - src/utils/GeocodingService.js (created)
+  Outcome: Ready to convert Lat/Long to addresses
+  
+Task 2.2: Update Emergency Active Screen
+  Status: ✅ DONE
+  Time: Already completed
+  Files:
+    - src/screens/EmergencyActiveScreen.js (updated)
+  Outcome: Location now shows address format
+  
+Task 2.3: Configure Google Maps API (Optional)
+  Status: NOT STARTED
+  Time: 5-10 minutes
+  Requirements: Google Maps API key
+  Process:
+    1. Get API key: https://console.cloud.google.com
+    2. Add to .env: REACT_APP_GOOGLE_MAPS_API_KEY=your_key
+    3. Enable Geocoding API in Google Console
+  Outcome: Real addresses shown in app
+  
+Task 2.4: Test Location Display
+  Status: PENDING
+  Time: 5 minutes
+  Requirements: Built APK from Phase 1
+  Test Steps:
+    1. Trigger SOS
+    2. Check location shows readable format
+    3. Verify accuracy indicator appears
+
+
+SUBTOTAL PHASE 2: 0-1 HOUR (Already mostly done, just testing)
+
+
+================================================================================
+PHASE 3: VOICE & SHAKE DETECTION (PRIORITY 1 - CORE FEATURE)
+================================================================================
+
+Automatic SOS trigger via voice command or phone shaking
+
+Task 3.1: Create Emergency Trigger Service
+  Status: ✅ DONE
+  Time: Already completed
+  Files:
+    - src/hooks/useEmergencyTrigger.js (created)
+  Outcome: Hook ready for detecting shakes and voice
+  
+Task 3.2: Create Emergency Context (for state management)
+  Status: NOT STARTED
+  Time: 15 minutes
+  Files to Create:
+    - src/context/EmergencyContext.js
+  Code:
+    - State: isEmergencyModeOn, activeEventId
+    - Functions: toggleEmergencyMode(), setActiveEvent()
+  Outcome: Context ready for background service
+  
+Task 3.3: Update Home Screen with Emergency Mode Toggle
+  Status: NOT STARTED
+  Time: 20 minutes
+  Files to Update:
+    - src/screens/HomeScreen.js
+  Changes:
+    - Import EmergencyContext and useEmergencyTrigger
+    - Add ON/OFF button for Emergency Mode
+    - Show "Shake 4-5 times or say 'help'" instructions
+    - Wire up hook to auto-trigger SOS
+  Outcome: User can enable/disable background monitoring
+  
+Task 3.4: Update SOS Trigger Function
+  Status: PARTIALLY DONE (May need updates)
+  Time: 10-15 minutes
+  Files to Update:
+    - src/screens/EmergencyActiveScreen.js (possibly)
+    - Backend SOS endpoint (check if complete)
+  Changes:
+    - Make sure SOS can be triggered programmatically
+    - Handle shake/voice trigger sources
+    - Log trigger method (manual vs. automatic)
+  Outcome: SOS works from manual button + shake + voice
+  
+Task 3.5: Request Permissions (Android)
+  Status: NOT STARTED
+  Time: 5 minutes
+  Files to Update:
+    - android/app/src/main/AndroidManifest.xml
+  Add Permissions:
+    - android.permission.RECORD_AUDIO (for voice)
+    - android.permission.CAMERA (for video)
+  Outcome: App has required system permissions
+  
+Task 3.6: Test Voice Recognition & Shake Detection
+  Status: PENDING
+  Time: 15-20 minutes
+  Test Steps:
+    1. Enable Emergency Mode on home screen
+    2. Try saying "help" 4-5 times (device must hear)
+    3. Try shaking phone 4-5 times
+    4. Verify SOS triggers automatically
+    5. Check logs for detection events
+  Requirements: Physical device (voice recognition poor on emulator)
+  Outcome: Both shake and voice detection working
+
+
+SUBTOTAL PHASE 3: 1-1.5 HOURS
+
+
+================================================================================
+PHASE 4: LIVE VIDEO FEED (PRIORITY 1 - MOST COMPLEX)
+================================================================================
+
+Real-time video call between user and guardian during SOS
+
+Task 4.1: Create Live Video Service
+  Status: ✅ DONE
+  Time: Already completed
+  Files:
+    - src/services/LiveVideoService.js (created)
+  Outcome: WebRTC service ready for video calls
+  
+Task 4.2: Update Backend for WebRTC Signaling
+  Status: NOT STARTED
+  Time: 1-2 hours
+  Backend Setup Required:
+    - Install socket.io in backend: npm install socket.io
+    - Add WebRTC signaling routes (offer/answer/ICE)
+    - Handle room management (user + guardian in same room)
+  Code Location: C:\P-HerSentinel\HerSentinel-Backend\
+  Outcome: Backend can relay video signaling messages
+  
+Task 4.3: Update Emergency Active Screen for Video
+  Status: NOT STARTED
+  Time: 30-45 minutes
+  Files to Update:
+    - src/screens/EmergencyActiveScreen.js
+  Changes:
+    - Add local video display (small preview in corner)
+    - Add remote video display (guardian or user)
+    - Add controls: Mute audio, Stop video, Switch camera
+    - Wire up LiveVideoService
+  Outcome: Video UI ready in Emergency screen
+  
+Task 4.4: Update Guardian Dashboard for Video Receiving
+  Status: NOT STARTED
+  Time: 45 minutes - 1 hour
+  Files to Update:
+    - src/screens/GuardianDashboard.js (or similar)
+  Changes:
+    - Listen for incoming SOS with video offer
+    - Accept/reject video call
+    - Display user's video feed
+    - Show user location + video simultaneously
+  Outcome: Guardian can see live user video during SOS
+  
+Task 4.5: Test Video Call (Two Devices)
+  Status: PENDING
+  Time: 30-45 minutes
+  Test Setup:
+    1. Device 1 (User): Trigger SOS with Emergency Mode
+    2. Device 2 (Guardian): Accept incoming SOS
+    3. Verify video streams appear on both
+    4. Test audio/video controls
+    5. Test ending call
+  Outcome: Live video working between two devices
+
+
+SUBTOTAL PHASE 4: 3-4 HOURS
+
+
+================================================================================
+PHASE 5: CLOUD DEPLOYMENT (PRIORITY 2 - DO AFTER TESTING)
+================================================================================
+
+Deploy backend and frontend to production servers
+
+Task 5.1: Choose Cloud Provider
+  Status: NOT STARTED
+  Time: 15 minutes decision + setup time
+  Options:
+    A. Railway.app (Easiest, free credits)
+    B. Render.com (Very easy, free tier)
+    C. Heroku (Expensive, no free tier anymore)
+    D. AWS EC2 (Powerful, free tier for 1 year)
+    E. Azure App Service (Good support, free tier)
+  Outcome: Cloud platform selected
+  
+Task 5.2: Deploy Backend to Cloud
+  Status: NOT STARTED
+  Time: 30-45 minutes (Railway/Render) or 1-2 hours (AWS)
+  Requirements: MongoDB Atlas (cloud database) - already have?
+  Process:
+    1. Connect GitHub repo to cloud platform
+    2. Set environment variables
+    3. Deploy backend server
+    4. Get cloud URL (e.g., https://backend.railway.app)
+  Outcome: Backend running in cloud
+  
+Task 5.3: Update Frontend API URL to Cloud
+  Status: NOT STARTED
+  Time: 5 minutes
+  Files to Update:
+    - .env: REACT_APP_API_BASE_URL=https://backend.railway.app
+  Outcome: App now uses cloud backend
+  
+Task 5.4: Build Release APK
+  Status: NOT STARTED
+  Time: 10-15 minutes
+  Command:
+    cd android
+    ./gradlew.bat assembleRelease
+  Outcome: Production APK file ready
+  
+Task 5.5: Create Signing Key for Play Store
+  Status: NOT STARTED
+  Time: 10 minutes (one-time)
+  Command:
+    keytool -genkey -v -keystore my-release-key.keystore \
+            -keyalg RSA -keysize 2048 -validity 10000 \
+            -alias my-key-alias
+  Outcome: Signed APK ready for distribution
+  
+Task 5.6: Upload to Google Play Store (Optional)
+  Status: NOT STARTED
+  Time: 1-2 hours (requires Google Developer account)
+  Requirements: Google Developer account ($25 one-time)
+  Outcome: App available on Play Store
+
+
+SUBTOTAL PHASE 5: 2-4 HOURS
+
+
+================================================================================
+PHASE 6: FUTURE ENHANCEMENTS (PRIORITY 2-3)
+================================================================================
+
+Nice-to-have features (can be added later)
+
+Task 6.1: Push Notifications
+  Time: 2 hours
+  Requires: Firebase Cloud Messaging setup
+  
+Task 6.2: Geofencing
+  Time: 2-3 hours
+  Requires: react-native-geolocation and risk zones database
+  
+Task 6.3: Emergency Contact Escalation
+  Time: 2 hours
+  Requires: Twilio API for SMS/calls
+  
+Task 6.4: Proof of Life Check-ins
+  Time: 1.5 hours
+  Requires: Scheduling service
+  
+Task 6.5: Advanced Analytics Dashboard
+  Time: 3-4 hours
+  Requires: Charts library and backend aggregation
+  
+Task 6.6: Multi-Language Support
+  Time: 1.5 hours
+  Requires: i18n library setup
+
+
+SUBTOTAL PHASE 6: 12-16 HOURS (Do this in Phase 2 of project)
+
+
+================================================================================
+COMPLETE TIMELINE SUMMARY
+================================================================================
+
+Phase 1 (Deployment):     2-3.5 hours
+Phase 2 (Location):       0-1 hour
+Phase 3 (Voice/Shake):    1-1.5 hours
+Phase 4 (Video):          3-4 hours
+Phase 5 (Cloud):          2-4 hours
+────────────────────────────────────
+TOTAL:                    8.5-15.5 hours
+
+Time per phase breakdown with experience factor:
+- First time (learning): 15-20 hours total
+- Second attempt (practiced): 8-10 hours total
+- Production deployment: 4-6 hours total
+
+
+================================================================================
+RECOMMENDED EXECUTION ORDER
+================================================================================
+
+DAY 1 - MORNING (3-4 hours):
+  ✓ Phase 1: Deployment Foundation
+    - Setup development environment
+    - Install dependencies
+    - First successful APK build
+    - Get app running on device
+
+DAY 1 - AFTERNOON (2-3 hours):
+  ✓ Phase 2: Location Display (Easy win, test deployment)
+  ✓ Phase 3 START: Voice & Shake Detection setup
+
+DAY 2 - MORNING (2-3 hours):
+  ✓ Phase 3 FINISH: Complete voice/shake detection
+    - Test on physical device
+
+DAY 2 - AFTERNOON/NIGHT (3-4 hours):
+  ✓ Phase 4: Live Video Feed
+    - Backend setup
+    - Frontend video screens
+    - Two-device testing
+
+DAY 3:
+  ✓ Phase 5: Cloud Deployment
+  ✓ Final testing before production release
+
+
+================================================================================
+CRITICAL SUCCESS FACTORS
+================================================================================
+
+1. DO PHASE 1 FIRST
+   - Can't test anything without working deployment
+   - Most common blocker: Gradle/SDK setup issues
+
+2. TEST ON PHYSICAL DEVICE BY DAY 1
+   - Emulator works but voice/shake detection needs real device
+   - Location services better on real device
+
+3. HAVE TWO DEVICES READY FOR PHASE 4
+   - Need one user device + one guardian device to test video
+   - Can use emulator + real device if needed
+
+4. BACKEND RUNNING DURING ALL TESTING
+   - Keep terminal window open with "npm start"
+   - Check logs for incoming API requests
+
+5. KEEP .env FILE WITH YOUR IP
+   - Document your development IP for easy reference
+   - Need it every time you rebuild
+
+
+================================================================================
+QUICK START CHECKLIST
+================================================================================
+
+Before starting, confirm you have:
+
+☐ Android Studio installed
+☐ Java JDK 11+ installed
+☐ Node.js v18+ with npm
+☐ One or two Android devices (or emulator)
+☐ USB cable (or wireless ADB set up)
+☐ MongoDB Atlas connection string (for backend)
+☐ About 8-12 hours available over next few days
+☐ Patience for debugging (always takes longer than expected!)
+
+Ready? Start with: PHASE 1, TASK 1.1
+
+
+================================================================================
+PROGRESS TRACKER
+================================================================================
+
+Copy this and update as you complete tasks:
+
+PHASE 1 - Deployment Foundation
+  [ ] Task 1.1 - Deployment Environment Setup
+  [ ] Task 1.2 - Install Dependencies
+  [ ] Task 1.3 - Backend Setup
+  [ ] Task 1.4 - API Base URL Configuration
+  [ ] Task 1.5 - First APK Build
+
+PHASE 2 - Location Display
+  [✓] Task 2.1 - Geocoding Service (DONE)
+  [✓] Task 2.2 - Emergency Screen Update (DONE)
+  [ ] Task 2.3 - Google Maps API Setup
+  [ ] Task 2.4 - Test Location Display
+
+PHASE 3 - Voice & Shake Detection
+  [✓] Task 3.1 - Trigger Service (DONE)
+  [ ] Task 3.2 - Emergency Context
+  [ ] Task 3.3 - Home Screen Updates
+  [ ] Task 3.4 - SOS Trigger Function
+  [ ] Task 3.5 - Request Permissions
+  [ ] Task 3.6 - Test Detection
+
+PHASE 4 - Live Video
+  [✓] Task 4.1 - Video Service (DONE)
+  [ ] Task 4.2 - Backend WebRTC Setup
+  [ ] Task 4.3 - Emergency Screen Video UI
+  [ ] Task 4.4 - Guardian Dashboard Update
+  [ ] Task 4.5 - Two-Device Testing
+
+PHASE 5 - Cloud Deployment
+  [ ] Task 5.1 - Choose Cloud Provider
+  [ ] Task 5.2 - Deploy Backend
+  [ ] Task 5.3 - Update API URL
+  [ ] Task 5.4 - Build Release APK
+  [ ] Task 5.5 - Create Signing Key
+  [ ] Task 5.6 - Play Store Upload
+
+
+================================================================================
+NEXT IMMEDIATE ACTION
+================================================================================
+
+Ready to proceed?
+
+NEXT STEP: Go to PHASE 1, TASK 1.1
+
+Follow DEPLOYMENT_GUIDE.txt for step-by-step instructions
+
+Questions? Refer to:
+  - DEPLOYMENT_GUIDE.txt - For setup and build issues
+  - DEPENDENCIES_SETUP.txt - For package installation errors
+  - FEATURES_INTEGRATION_GUIDE.txt - For code integration help
+  - PROJECT_ROADMAP.txt - For feature priority overview
+
+
+GOOD LUCK! 🚀
+
+================================================================================

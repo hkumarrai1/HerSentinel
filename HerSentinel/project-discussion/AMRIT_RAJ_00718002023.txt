@@ -1,0 +1,24 @@
+AMRIT RAJ (00718002023)
+Role: Alert System and Testing Developer
+
+Simple Role Description:
+Amrit worked on the alert system, emergency siren behavior, and testing the app to make sure it works correctly. His role helped the app respond properly during SOS situations.
+
+What was done in the project:
+- Worked on emergency alerts and siren-related behavior.
+- Helped make sure SOS notifications work correctly.
+- Tested app features to find bugs and fix problems.
+- Checked if evidence and emergency actions work as expected.
+- Helped improve reliability of the app during emergency use.
+
+How to explain in the discussion:
+"I handled the alert system and testing part of HerSentinel. My work was to make sure the emergency alerts behave correctly and to test the app so that important safety features work without errors."
+
+FAQ Questions:
+1. What is your role in the project?
+2. How does the alert system work in HerSentinel?
+3. What did you test in the app?
+4. Why is testing important for an emergency app?
+5. How did you check that SOS alerts were working correctly?
+6. Did you find and fix any major issues during testing?
+7. How did your work improve app reliability?

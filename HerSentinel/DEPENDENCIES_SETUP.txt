@@ -1,0 +1,178 @@
+================================================================================
+HERSENTIAL - NEW FEATURES - DEPENDENCIES INSTALLATION
+================================================================================
+
+This document lists all npm packages needed for the new features:
+- Voice Recognition & Shake Detection
+- Live Video Feed
+- Enhanced Location Display
+
+================================================================================
+STEP 1: INSTALL ALL PACKAGES AT ONCE
+================================================================================
+
+In Terminal, navigate to your project:
+
+  cd C:\P-HerSentinel\HerSentinel
+
+Run this single command to install everything:
+
+  npm install @react-native-voice/voice react-native-sensors react-native-webrtc socket.io-client
+
+Or if you prefer one by one:
+
+  npm install @react-native-voice/voice
+  npm install react-native-sensors
+  npm install react-native-webrtc
+  npm install socket.io-client
+
+
+================================================================================
+STEP 2: INSTALL PEER DEPENDENCIES (IF NEEDED)
+================================================================================
+
+Some packages may require peer dependencies. If you see warnings, run:
+
+  npm install react-native-permissions
+
+(This handles permissions for camera, microphone, etc.)
+
+
+================================================================================
+STEP 3: LINK NATIVE MODULES (For React Native 0.60+)
+================================================================================
+
+Most packages auto-link, but if you have issues:
+
+For Android:
+  cd C:\P-HerSentinel\HerSentinel\android
+  ./gradlew.bat clean
+
+For iOS:
+  cd C:\P-HerSentinel\HerSentinel\ios
+  pod install
+
+
+================================================================================
+STEP 4: VERIFY INSTALLATION
+================================================================================
+
+Check if all packages installed correctly:
+
+  npm list @react-native-voice/voice
+  npm list react-native-sensors
+  npm list react-native-webrtc
+  npm list socket.io-client
+
+Expected output: Each should show version number (not error)
+
+
+================================================================================
+PACKAGE DESCRIPTIONS
+================================================================================
+
+1. @react-native-voice/voice
+   - Purpose: Voice recognition and speech-to-text
+   - Used for: Detecting "help" voice command for SOS trigger
+   - Size: ~5MB
+
+2. react-native-sensors
+   - Purpose: Access device accelerometer, gyroscope, magnetometer
+   - Used for: Detecting phone shake (4-5 shakes = SOS trigger)
+   - Size: ~3MB
+
+3. react-native-webrtc
+   - Purpose: WebRTC implementation for real-time communication
+   - Used for: Live video call between user and guardian
+   - Size: ~15MB
+
+4. socket.io-client
+   - Purpose: Real-time bidirectional communication
+   - Used for: Signaling messages for WebRTC video call setup
+   - Size: ~2MB
+
+
+================================================================================
+STEP 5: ANDROID CONFIGURATION
+================================================================================
+
+Add to: C:\P-HerSentinel\HerSentinel\android\app\src\main\AndroidManifest.xml
+
+Inside <manifest> tag, add permissions:
+
+  <uses-permission android:name="android.permission.CAMERA" />
+  <uses-permission android:name="android.permission.RECORD_AUDIO" />
+  <uses-permission android:name="android.permission.INTERNET" />
+  <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+
+Update: C:\P-HerSentinel\HerSentinel\android\build.gradle
+
+Make sure minSdkVersion is 21 or higher:
+
+  minSdkVersion = 21
+
+
+================================================================================
+STEP 6: BUILD & TEST
+================================================================================
+
+After installation, rebuild the APK:
+
+  cd C:\P-HerSentinel\HerSentinel
+  npm run android
+
+Or for release build:
+
+  cd android
+  ./gradlew.bat assembleRelease
+
+Expected: Build should complete without errors (may take 5-10 minutes)
+
+
+================================================================================
+TROUBLESHOOTING
+================================================================================
+
+ERROR: "Gradle build failed: Missing native modules"
+SOLUTION:
+  1. Delete node_modules: rm -r node_modules
+  2. Delete package-lock.json: del package-lock.json
+  3. Reinstall: npm install
+  4. Clean gradle: cd android && ./gradlew.bat clean
+  5. Rebuild: npm run android
+
+ERROR: "Permission denied" when building
+SOLUTION:
+  1. Restart your terminal as Administrator
+  2. Clear gradle cache: rm -r android/.gradle
+  3. Try building again
+
+ERROR: "Socket.io connection fails"
+SOLUTION:
+  1. Ensure backend server is running (port 4000)
+  2. Check API_BASE_URL in .env matches your IP
+  3. Verify firewall allows port 4000
+  4. Check backend has socket.io server initialized
+
+ERROR: "Voice recognition not working"
+SOLUTION:
+  1. Check microphone permissions are granted
+  2. Test on physical device (not emulator)
+  3. Ensure English language pack is installed on device
+  4. Check @react-native-voice/voice version is latest
+
+
+================================================================================
+NEXT STEPS
+================================================================================
+
+After installation:
+
+1. Verify deployment works (see DEPLOYMENT_GUIDE.txt)
+2. Test voice recognition on physical device
+3. Test shake detection
+4. Test live video feed with second device or emulator
+5. Deploy to production when ready
+
+
+================================================================================
